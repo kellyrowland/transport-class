@@ -1,0 +1,175 @@
+\documentclass[12pt]{article}
+\usepackage[top=1in, bottom=1in, left=1in, right=1in]{geometry}
+
+\usepackage{setspace}
+\onehalfspacing
+
+\usepackage{amssymb}
+%% The amsthm package provides extended theorem environments
+\usepackage{amsthm}
+\usepackage{epsfig}
+\usepackage{times}
+\renewcommand{\ttdefault}{cmtt}
+\usepackage{amsmath}
+\usepackage{graphicx} % for graphics files
+
+% Draw figures yourself
+\usepackage{tikz} 
+
+% writing elements
+\usepackage{mhchem}
+
+% The float package HAS to load before hyperref
+\usepackage{float} % for psuedocode formatting
+\usepackage{xspace}
+
+% from Denovo Methods Manual
+\usepackage{mathrsfs}
+\usepackage[mathcal]{euscript}
+\usepackage{color}
+\usepackage{array}
+
+\usepackage[pdftex]{hyperref}
+\usepackage[parfill]{parskip}
+
+% math syntax
+\newcommand{\nth}{n\ensuremath{^{\text{th}}} }
+\newcommand{\ve}[1]{\ensuremath{\mathbf{#1}}}
+\newcommand{\Macro}{\ensuremath{\Sigma}}
+\newcommand{\rvec}{\ensuremath{\vec{r}}}
+\newcommand{\omvec}{\ensuremath{\hat{\Omega}}}
+\newcommand{\vOmega}{\ensuremath{\hat{\Omega}}}
+%---------------------------------------------------------------------------
+%---------------------------------------------------------------------------
+\begin{document}
+\begin{center}
+{\bf NE 155/255, Fall 2019 \\
+Assumptions and Terms of the Transport Equation\\
+September 13, 2019}
+\end{center}
+
+\setlength{\unitlength}{1in}
+\begin{picture}(6,.1) 
+\put(0,0) {\line(1,0){6.25}}         
+\end{picture}
+
+%-----------------------------------------
+\subsection*{Assumptions}
+
+\begin{enumerate}
+\item Particles are point objects ($\lambda = h/(mv)$) is small compared to 
+      the atomic diameter): its state is fully described by its location, 
+      velocity vector, and a given time. This ignores rotation and quantum 
+      effects.
+\item Neutral particles travel in straight lines between collisions.
+\item Particle-particle collisions are negligible (makes TE linear).
+\item Material properties are isotropic (generally valid unless velocities are 
+      very low).
+\item Material composition is time-independent (generally valid over short 
+      time scales).
+\item Quantities are expected values: fluctuations about the mean for very low 
+      densities are not accounted for.
+\end{enumerate}
+
+\subsection*{The Transport Equation}
+
+We consider a six-dimensional volume (as a six-dimensional cube) fixed in
+space, of dimensions $\triangle x$, $\triangle y$, $\triangle z$,
+$\triangle E$, $\triangle \theta$, $\triangle \varphi$. Then, the number of
+particles within this volume at time $t$ is
+
+\begin{equation*}
+n(\rvec,E,\omvec,t)
+\triangle x\triangle y\triangle z\triangle E\triangle \theta\triangle \varphi =
+n(\rvec,E,\omvec,t)\triangle \beta,
+\end{equation*}
+
+where all arguments of $N$ are ``average'' arguments in the increment of
+six-dimensional phase space $\triangle \beta$. The number of particles in this
+cube changes with time:
+
+\begin{equation*}
+\triangle \beta\frac{\partial}{\partial t}n(\rvec,E,\omvec,t) =
+\begin{array}{l}
+\text{time rate of change of the number of}\vspace{-0.1cm}\\
+\text{particles in the six-dimensional cube $\triangle \beta$.}
+\end{array}
+\end{equation*}
+
+This time rate of change is due to five separate processes. One is the rate of
+streaming of particles out of the volume through the boundaries. The other
+processes occur within the six-dimensional ``cube'': the rate of absorption;
+the rate of scattering from $E$, $\omvec$ to all other energies and directions,
+known as outscattering; the rate of scattering into $E$, $\omvec$ from all
+other energies and directions, known as inscattering; and the rate of
+production of particles due to an internal source.
+
+Now, let us consider the surfaces of the cube perpendicular to the $x$-axis.
+For the net rate of particles leaving the cube through these two surfaces, we
+have
+
+\begin{equation*}
+(\textrm{streaming})_x = \dot x n(\rvec,E,\omvec,t)\mid_x^{x+\triangle x}
+\triangle y\triangle z\triangle E\triangle \theta \triangle\varphi,
+\end{equation*}
+
+where $\dot x$ is the $x$ component of the particle velocity, and 
+$\triangle y\triangle z\triangle E\triangle\theta\triangle \varphi$ is the
+surface area. Letting $\triangle x$ go to the differential $dx$, we rewrite
+
+\begin{equation*}
+(\textrm{streaming})_x = \triangle\beta \frac{\partial}{\partial x}
+\left[\dot x n(\rvec,E,\omvec,t)\right].
+\end{equation*}
+
+Using the same procedure for the flow from the cube in the other five
+``directions", we obtain
+
+\begin{align*}
+\textrm{streaming} =
+\bigg[ \frac{\partial}{\partial x}(\dot x n) + &
+\frac{\partial}{\partial y}(\dot y n) +\frac{\partial}{\partial z}(\dot z n) \\
+&\quad\quad + \frac{\partial}{\partial E}(\dot E n) + 
+\frac{\partial}{\partial \theta}(\dot \theta n) +
+\frac{\partial}{\partial \varphi}(\dot \varphi n)\bigg] \triangle \beta,
+\end{align*}
+
+where $n = n(\rvec,E,\omvec,t)$.
+
+The rate of absorption within the cube is the product of the number of
+particles in the cube and the probability of absorption per particle per unit
+of time. This probability is given by the product of the absorption cross
+section and the particle speed $v$. That is,
+
+\begin{equation*}
+\textrm{absorption} = v\Sigma_a(\rvec,E)n(\rvec ,E,\omvec,t)\triangle \beta.
+\end{equation*}
+
+Using similar arguments and the fact that we need to sum the scattering from
+(to) $E$, $\omvec$ to (from) all other energies and directions $E'$, $\omvec'$,
+we find
+
+\begin{align*}
+\textrm{outscattering} &=
+\triangle \beta \int_0^{\infty}\int_{4\pi}
+v\Sigma_s(\rvec,E\rightarrow E', \omvec\rightarrow\omvec')
+n(\rvec,E,\omvec,t)d\omvec'dE', \\
+\textrm{inscattering} &= \triangle \beta \int_0^{\infty}\int_{4\pi}
+v'\Sigma_s(\rvec,E'\rightarrow E, \omvec'\rightarrow\omvec)
+n(\rvec,E',\omvec',t)d\omvec'dE',
+\end{align*}
+
+where $\Sigma_s(\rvec,E'\rightarrow E, \omvec'\rightarrow\omvec)$ is the
+macroscopic differential scattering cross section. Since the distribution
+function in the integrand of the outscattering term is independent of the
+integration variables, we can rewrite outscattering as 
+$\triangle \beta v\Sigma_s(\rvec,E)n(\rvec, E, \omvec,t)$.
+Finally, we need to consider the internal source of particles. We quantify this
+source by introducing the function $S(\rvec, E, \omvec, t)$ such that the rate
+of introduction of particles into the cube is given by
+
+\begin{equation*}
+\textrm{source} = S(\rvec,E,\omvec,t)\triangle \beta.
+\end{equation*}
+
+\end{document}
