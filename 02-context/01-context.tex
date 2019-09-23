@@ -1,0 +1,255 @@
+\documentclass[12pt]{article}
+\usepackage[top=1in, bottom=1in, left=1in, right=1in]{geometry}
+
+\usepackage{setspace}
+\onehalfspacing
+
+\usepackage{amssymb}
+%% The amsthm package provides extended theorem environments
+\usepackage{amsthm}
+\usepackage{epsfig}
+\usepackage{times}
+\renewcommand{\ttdefault}{cmtt}
+\usepackage{amsmath}
+\usepackage{graphicx} % for graphics files
+\usepackage{tabu}
+
+% Draw figures yourself
+\usepackage{tikz} 
+
+% writing elements
+\usepackage{mhchem}
+
+\usepackage{paralist}
+
+% The float package HAS to load before hyperref
+\usepackage{float} % for psuedocode formatting
+\usepackage{xspace}
+
+% from Denovo Methods Manual
+\usepackage{mathrsfs}
+\usepackage[mathcal]{euscript}
+\usepackage{color}
+\usepackage{array}
+
+\usepackage[pdftex]{hyperref}
+\usepackage[parfill]{parskip}
+\usepackage{url}
+
+% math syntax
+\newcommand{\nth}{n\ensuremath{^{\text{th}}} }
+\newcommand{\ve}[1]{\ensuremath{\mathbf{#1}}}
+\newcommand{\Macro}{\ensuremath{\Sigma}}
+\newcommand{\rvec}{\ensuremath{\vec{r}}}
+\newcommand{\omvec}{\ensuremath{\hat{\Omega}}}
+\newcommand{\vOmega}{\ensuremath{\hat{\Omega}}}
+%---------------------------------------------------------------------------
+%---------------------------------------------------------------------------
+\begin{document}
+\begin{center}
+{\bf NE 155/255, Fall 2019 \\
+Solution Context and Tools\\
+September 23, 2019}
+\end{center}
+
+\setlength{\unitlength}{1in}
+\begin{picture}(6,.1) 
+\put(0,0) {\line(1,0){6.25}}         
+\end{picture}
+
+We've started looking a little bit at how to play around with the transport 
+equation. To venture much farther in thinking about solving the transport 
+equation, it helps to remember what we're applying it to and some other bits 
+of information that we use. 
+
+As mentioned, we'll mostly focus on reactors in this class. A nuclear reactor 
+is a three-dimensional structure consisting of complicated geometrical shapes 
+made of variety of materials.	
+
+\begin{compactitem} 
+\item A unit cell usually consists of a fuel rod, gap, cladding and
+      corresponding moderator. It is usually surrounded by similar cells. A
+      fuel rod consists of fuel pellets.	
+\item A fuel assembly usually consists of several hundred fuel rods (fuel 
+      cells).	
+\item A reactor core consists of several hundred fuel assemblies.	
+\item Fuel assemblies and fuel rods are usually arranged in square or
+      hexagonal lattice.	
+\item Instead of fuel pellets, the fuel could be in the form of coated fuel
+      particles (TRISO particles).
+\item Coated fuel particles could be arranged into fuel compacts or pebbles
+      (pebble bed reactor).	
+\end{compactitem}
+
+% \begin{figure}[h!]
+    \begin{center}
+    \includegraphics[keepaspectratio, width=\textwidth]{pwr-assembly.png}
+    \end{center}
+% \end{figure}
+% PWR assembly diagram
+% https://doi.org/10.1016/j.pnucene.2018.03.015
+
+% \begin{figure}[h!]
+    \begin{center}
+    \includegraphics[keepaspectratio, width=\textwidth]{triso.png}
+    \end{center}
+% \end{figure}
+% triso particle
+% https://inldigitallibrary.inl.gov/sites/sti/sti/4336175.pdf
+
+% \begin{figure}[h!]
+    \begin{center}
+    \includegraphics[keepaspectratio, width=\textwidth]{assembly-types}
+    \end{center}
+% \end{figure}
+% assembly types diagram
+% figure 10.4 from D&H
+
+% \begin{figure}[h!]
+    \begin{center}
+    \includegraphics[keepaspectratio, width=\textwidth]{unit-cells}
+    \end{center}
+% \end{figure}
+% unit cells
+% fig 10.5 from D&H
+
+\subsubsection*{PWR Specs (from Appendix H of Nuclear Reactor Theory)}
+
+\begin{itemize}
+\item{$\sim$200 fuel assemblies}
+\item{Each assembly contains array of 17$\times$17 fuel rods}
+\item{3.5 - 4 m tall, $\sim$3.5 m active diameter}
+\item{UO$_2$ fuel, H$_2$O moderator and coolant, Zircaloy clad}
+\item{$\sim$3\% enrichment}
+\end{itemize}
+
+\subsubsection*{BWR Specs (from Appendix H of Nuclear Reactor Theory)}
+
+\begin{itemize}
+\item{$\sim$700 fuel assemblies}
+\item{Each assembly contains array of 8$\times$8 fuel rods}
+\item{$\sim$3.5 m tall, $\sim$3.5 m active diameter}
+\item{UO$_2$ fuel, H$_2$O moderator and coolant, Zircaloy clad}
+\item{$\sim$2.5\% enrichment}
+\end{itemize}
+
+% \begin{figure}[h!]
+    \begin{center}
+    \includegraphics[keepaspectratio, width=\textwidth]{homog.png}
+    \end{center}
+% \end{figure}
+% homogenization
+% fig 10.6 from D&H
+
+%-------------------------------------------------------------
+%-------------------------------------------------------------
+\pagebreak
+% \vspace{-1 em}
+\subsection*{Solution Context and Data}%
+\begin{figure}[h!]
+    \begin{center}
+    \includegraphics[keepaspectratio, width = 4.5 in]{solver-map}
+    \end{center}
+    %\caption{Legendre polynomials}
+    \label{fig:context}
+\end{figure}
+
+We have many different types of geometries and physics going on with the 
+systems we're interested in. However, we take the same fundamental approach no 
+matter what. Each component is incredibly important, but let's take a moment 
+to talk about \textbf{nuclear data}.
+
+We need a description of all of the physical interactions happening inside a 
+nuclear reactor that we can use in our equation. An \textit{evaluated nuclear 
+data file} is a collection of various data enabling to reconstruct, for each 
+isotope, its cross-section's 
+
+\begin{compactitem}
+\item general information
+\item resonance parameters 
+\item angular distribution for emitted particles 
+\item energy distribution for emitted particles 
+\item energy-angle distribution for emitted particles 
+\item thermal neutron scattering law data 
+\item radioactivity and fission-product yield data 
+\item multiplicities for radioactive nuclide production 
+\item cross-sections for radioactive nuclide production
+\end{compactitem}
+
+There are many evaluations coming from various countries such as: USA, Europe, 
+Japan, Russia, China, \dots Getting from experimental data (what we have of 
+it) + theory (however accurate that is) to data that can actually be used in a 
+code is no small feat. And, that process is sort of a mess...
+\pagebreak
+
+\begin{figure}[h!]
+    \begin{center}
+    \includegraphics[keepaspectratio, width = \textwidth]{data-flow}
+    \end{center}
+\end{figure}
+\pagebreak
+
+% https://www.epj-conferences.org/articles/epjconf/pdf/2017/22/epjconf_icrs2017_07003.pdf
+The NJOY manual is approximately 800 pages.
+
+We won't go through all of this, but it's important to have context 
+about what this is and how confusing it can be. There is a lot of data and 
+many formats. In computation you will pretty much only need to interface with 
+ENDF and its equivalents. 
+
+The data that we use is complicated, and can be quite different depending on 
+the application we're interested in. Let's look at some. All plots shown here
+were generated with the NNDC ENDF project at
+\url{https://www.nndc.bnl.gov/exfor/endf00.jsp}
+
+
+\begin{center}
+\includegraphics[keepaspectratio, width = \textwidth]{u235xs}
+\end{center}
+
+\begin{center}
+\includegraphics[keepaspectratio, width = \textwidth]{u238xs}
+\end{center}
+
+\begin{center}
+\includegraphics[keepaspectratio, width = \textwidth]{hdxs}
+\end{center}
+
+
+%-------------------------------------------------------------
+%-------------------------------------------------------------
+\pagebreak
+\subsection*{Physics Impacts}
+
+We are often able to use knowledge about the physics to inform method 
+development or, at the very least, choose which methods are more appropriate 
+given our physics. 
+
+For example, you may notice is how, in particular, fast and thermal reactor 
+physics differ. We often need different codes to deal with LWRs and FRs. 
+
+Many of the assumptions employed in traditional LWR methods do not apply:
+
+\begin{compactitem}
+\item Lack of a 1/E energy spectrum as a basis for the calculation of 
+      resonance absorption.
+\item Upscattering resulting from the thermal motion of the scattering nuclei 
+      may be neglected.
+\item Inelastic, (n, 2n), and anisotropic scattering are quite important.
+\item Long mean free paths imply global coupling. That is, local reactivity 
+      effects impact the entire core.  
+\item The energy range where neutrons induce fission and the energy range 
+      where the fission neutrons appear strongly overlap.
+\end{compactitem}
+
+Other physics considerations have high priority in FR methods:
+
+\begin{compactitem}
+\item Detailed energy modeling for resonance structure (core/reflector).
+\item Transport and anisotropy effects are more important at high energy.
+\end{compactitem}
+
+In general, a distinct set of physics analysis and core design tools with 
+tailored assumptions have been and are being developed for FR analysis.
+
+\end{document}
