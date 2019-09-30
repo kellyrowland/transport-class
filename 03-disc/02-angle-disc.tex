@@ -1,0 +1,210 @@
+\documentclass[12pt]{article}
+\usepackage[top=1in, bottom=1in, left=1in, right=1in]{geometry}
+
+\usepackage{setspace}
+\onehalfspacing
+
+\usepackage{amssymb}
+%% The amsthm package provides extended theorem environments
+\usepackage{amsthm}
+\usepackage{epsfig}
+\usepackage{times}
+\renewcommand{\ttdefault}{cmtt}
+\usepackage{amsmath}
+\usepackage{graphicx} % for graphics files
+\usepackage{tabu}
+
+% Draw figures yourself
+\usepackage{tikz} 
+
+% writing elements
+%\usepackage{mhchem}
+
+\usepackage{paralist}
+
+% The float package HAS to load before hyperref
+\usepackage{float} % for psuedocode formatting
+\usepackage{xspace}
+
+% from Denovo Methods Manual
+\usepackage{mathrsfs}
+\usepackage[mathcal]{euscript}
+\usepackage{color}
+\usepackage{array}
+
+\usepackage[pdftex]{hyperref}
+\usepackage[parfill]{parskip}
+
+% math syntax
+\newcommand{\nth}{n\ensuremath{^{\text{th}}} }
+\newcommand{\ve}[1]{\ensuremath{\mathbf{#1}}}
+\newcommand{\Macro}{\ensuremath{\Sigma}}
+\newcommand{\rvec}{\ensuremath{\vec{r}}}
+\newcommand{\vecr}{\ensuremath{\vec{r}}}
+\newcommand{\omvec}{\ensuremath{\hat{\Omega}}}
+\newcommand{\vOmega}{\ensuremath{\hat{\Omega}}}
+\newcommand{\even}{\ensuremath{\phi^g}}
+\newcommand{\odd}{\ensuremath{\vartheta^g}}
+\newcommand{\evenp}{\ensuremath{\phi^{g'}}}
+\newcommand{\oddp}{\ensuremath{\vartheta^{g'}}}
+\newcommand{\Sn}{\ensuremath{S_N} }
+\newcommand{\Ye}[2]{\ensuremath{Y^e_{#1}(\vOmega_#2)}}
+\newcommand{\sigg}[1]{\ensuremath{\Macro^{g'\rightarrow g}_{s,#1}}}
+\newcommand{\psig}{\ensuremath{\psi^g}}
+%---------------------------------------------------------------------------
+%---------------------------------------------------------------------------
+\begin{document}
+\begin{center}
+{\bf NE 155/255, Fall 2019 \\
+Angular Discretization\\
+September 30, 2019}
+\end{center}
+
+\setlength{\unitlength}{1in}
+\begin{picture}(6,.1) 
+\put(0,0) {\line(1,0){6.25}}         
+\end{picture}
+
+%---------------------------------------------------------------------------
+%---------------------------------------------------------------------------
+\section*{Angular Discretization}
+
+We have two main approaches to angular
+disrectization, the \textbf{Discrete Ordinates} method and the 
+\textbf{Spherical Harmonics} method (which we often simplify to 
+Legendre polynomials and thus call $P_N$, not to be confused with the 
+scattering expansion).
+
+\subsection*{Discrete Ordinates}
+
+The discrete ordinates approximation is a collocation method in angle. A 
+collocation method is a solution method for ODEs, PDEs, and integral 
+equations. Choose a finite-dimensional space of candidate solutions, such as 
+polynomials up to a certain degree, and a number of points within the domain, 
+called collocation points. Select the solution that satisfies the equation at 
+those points within that space. 
+%https://en.wikipedia.org/wiki/Collocation_method
+
+For us, the collocation points are the discrete angles that we choose
+($\omvec \rightarrow \omvec_a; a = 1,\dots,n)$ and the solution space is the 
+flux. The TE is only valid along the selected set of angles $\vOmega_a$. We 
+apply a compatible quadrature (integration approximation) to the integral 
+term. We write one equation for each angle in the set (dropping energy 
+dependence and fission for simplicity; the source term contains scattering and 
+external sources):
+
+\begin{align*}
+\vOmega_a \cdot \nabla \psi_a(\vecr) &+ 
+\Sigma_t(\vecr)\psi_a(\vecr) = Q_a(\vec{r})\\
+\psi_a(\vecr) &\equiv \psi(\vecr,\vOmega_a) \qquad Q_a(\vecr) \equiv 
+Q(\vecr,\vOmega_a)\\
+\int_{4\pi} d\vOmega\: &= \sum_{a=1}^n w_a = 4\pi \\
+\phi(\vecr) &=  \int_{4\pi} d\vOmega\:\psi(\vecr,\vOmega) = 
+\sum_{a=1}^n w_a \psi_a(\vecr)
+\end{align*}
+
+The collection ($\vOmega_a, w_a$) is known as the angular quadrature set. The 
+$w_a$ are the integration weights that go with the angles to create an 
+integration. The angle-weight combination + number of angles dictates the 
+accuracy of the integration. The quadrature we choose also dictates the number 
+of unknowns. For level-symmetric quadratures, the most common types and what
+people usually mean by $S_{N}$, we get $n=N(N+2)$ unknowns. 
+
+However, we still need to explain what's going on in the sources. To do that, 
+we're going to look at \textit{Spherical Harmonics} and how they relate to 
+Legendre Polynomials. This will allow us to do angular expansions in three 
+dimensions (derived from the Exnihilo manual and Wikipedia). 
+
+\subsubsection*{About Spherical Harmonics}
+
+The addition theorem of Spherical Harmonics can be used to evaluate the
+Legendre function $P_{\ell}(\vOmega'\cdot\vOmega)$,
+\begin{equation}
+  P_{\ell}(\vOmega'\cdot\vOmega) = \frac{4\pi}{2\ell +1}\sum_{m=-\ell }^\ell 
+  Y_{\ell m}(\vOmega)Y^{\ast}_{\ell m}(\vOmega')\:,
+\end{equation}
+where the spherical harmonics $Y_{\ell m}$ are
+\begin{equation}
+  Y_{\ell m}(\theta,\varphi) = (-1)^m\sqrt
+  {
+    \frac{2\ell +1}{4\pi}\frac{(\ell-m)!}{(\ell+m)!}
+  }\,
+  P_{\ell m}(\cos\theta)\mathrm{e}^{im\varphi}\:,
+  \label{eq:complete-spherical-harmonics}
+\end{equation}
+and the $P_{\ell m}$ are the \textit{associated Legendre Polynomials}. These are 
+the solutions to
+
+\[
+(1-x^{2}){\frac {d^{2}}{dx^{2}}}P_{\ell }^{m}(x)-
+2x{\frac {d}{dx}}P_{\ell }^{m}(x)+\left[\ell (\ell +1)-
+{\frac {m^{2}}{1-x^{2}}}\right]P_{\ell }^{m}(x)=0\:,
+\]
+
+where the indices $\ell$ and $m$ are referred to as the degree and order of the 
+associated Legendre polynomial, respectively. When $m$ is zero, these functions
+are identical to the Legendre polynomials.
+%https://en.wikipedia.org/wiki/Associated_Legendre_polynomials
+
+We're going to use Spherical Harmonics to expand our scattering and external 
+source. Everything in our equations must be real; therefore, we can follow a 
+methodology that shows expands a real-valued function using complex Spherical 
+Harmonics ($Y^*$ indicates complex conjugate).  First,
+the expansion is split into positive and negative components of $m$:
+
+\begin{equation}
+P_\ell(\vOmega'\cdot\vOmega) = \frac{4\pi}{2\ell+1}
+\Bigl[
+Y_{\ell0}(\vOmega)Y_{\ell0}(\vOmega') +
+\sum_{m=1}^l
+\bigl(Y_{\ell m}(\vOmega)Y^{\ast}_{\ell m}(\vOmega') +
+Y_{\ell-m}(\vOmega)Y^{\ast}_{\ell -m}(\vOmega')\bigr)\Bigr]\:.
+\end{equation}
+
+Next, we're going to go through a bunch of mathematical maneuvers to get rid 
+of the negative $m$ components and the complex conjugate values. The 
+motivation is ease of analysis and handling.
+
+First, we'll simplify the $m=0$ term:
+
+\begin{equation}
+Y_{\ell 0} = \sqrt{\frac{2\ell +1}{4\pi}}\,P_{\ell 0} = Y^e_{\ell 0}\:,
+\end{equation}
+
+where we have used the idea that we can separate a spherical harmonic into 
+even and odd components using the $e^{ix}$ identity,
+
+\begin{align}
+Y^e_{\ell m} &= D_{\ell m}P_{\ell m}\cos (m\varphi)\:,\label{eq:Ye}\\
+Y^o_{\ell m} &= D_{\ell m}P_{\ell m}\sin (m\varphi)\:,\label{eq:Yo}\\
+D_{\ell m} &= (-1)^m\sqrt{(2-\delta_{m0})\frac{2\ell+1}{4\pi}\frac{(\ell-m)!}{(\ell+m)!}}\:.
+\end{align}
+
+The \(\sqrt{(2-\delta_{m0})}\) term appears as an orthogonality requirement. 
+When we expand a function in an entirely \textit{real} basis (as opposed to 
+the complex basis of the general spherical harmonics), the basis functions for 
+the real basis must be orthogonal. The spherical harmonics basis functions are 
+orthogonal, but they also contain complex components that we don't need for 
+real physical quantities such as the scattering source. Hence, the basis 
+functions for the real basis need to be orthogonal, which means that the 
+integral of \(\hat{Y}^e_{\ell m}\hat{Y}^e_{\ell'm'}\) over the unit sphere must give 
+unity (with some Kronecker Deltas hanging around as well). We likewise require 
+this orthogonality condition for the odd components. These two orthogonality 
+statements do not give values of 1 unless the definitions contain an extra 
+factor of \(\sqrt{(2-\delta_{m0})}\) (the \(\delta_{m0}\) term appears from 
+the orthogonality of cosines in the definition of \(\hat{Y}_{lm}^e\)). 
+
+We will make this substitution in order to satisfy the orthogonality 
+requirement:
+
+\begin{equation}
+\hat{Y}^e_{lm} = \frac{1}{\sqrt{2-\delta_{m0}}}Y^e_{lm}\:,\quad
+\hat{Y}^o_{lm} = \frac{1}{\sqrt{2-\delta_{m0}}}Y^o_{lm}\:.
+\end{equation}
+
+Because \(\hat{Y}_{\ell0}^o=0\) based on the inclusion of \(\sin(m\varphi)\) in 
+its definition, the above sometimes neglects the \(\delta_{m0}\) term in the 
+odd function since it is implied that \(m=0\) leads to an identically zero 
+function anyways.
+
+\end{document}
