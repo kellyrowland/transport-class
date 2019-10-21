@@ -1,0 +1,252 @@
+\documentclass[12pt]{article}
+\usepackage[top=1in, bottom=1in, left=1in, right=1in]{geometry}
+
+\usepackage{setspace}
+\onehalfspacing
+
+\usepackage{amssymb}
+%% The amsthm package provides extended theorem environments
+\usepackage{amsthm}
+\usepackage{epsfig}
+\usepackage{times}
+\renewcommand{\ttdefault}{cmtt}
+\usepackage{amsmath}
+\usepackage{graphicx} % for graphics files
+\usepackage{tabu}
+
+% Draw figures yourself
+\usepackage{tikz} 
+
+% writing elements
+%\usepackage{mhchem}
+
+\usepackage{paralist}
+
+% The float package HAS to load before hyperref
+\usepackage{float} % for psuedocode formatting
+\usepackage{xspace}
+
+% from Denovo Methods Manual
+\usepackage{mathrsfs}
+\usepackage[mathcal]{euscript}
+\usepackage{color}
+\usepackage{array}
+
+\usepackage[pdftex]{hyperref}
+\usepackage[parfill]{parskip}
+
+% math syntax
+\newcommand{\nth}{n\ensuremath{^{\text{th}}} }
+\newcommand{\ve}[1]{\ensuremath{\mathbf{#1}}}
+\newcommand{\Macro}{\ensuremath{\Sigma}}
+\newcommand{\rvec}{\ensuremath{\vec{r}}}
+\newcommand{\vecr}{\ensuremath{\vec{r}}}
+\newcommand{\omvec}{\ensuremath{\hat{\Omega}}}
+\newcommand{\vOmega}{\ensuremath{\hat{\Omega}}}
+\newcommand{\even}{\ensuremath{\phi^g}}
+\newcommand{\odd}{\ensuremath{\vartheta^g}}
+\newcommand{\evenp}{\ensuremath{\phi^{g'}}}
+\newcommand{\oddp}{\ensuremath{\vartheta^{g'}}}
+\newcommand{\Sn}{\ensuremath{S_N} }
+\newcommand{\Ye}[2]{\ensuremath{Y^e_{#1}(\vOmega_#2)}}
+\newcommand{\Yo}[2]{\ensuremath{Y^o_{#1}(\vOmega_#2)}}
+\newcommand{\sigg}[1]{\ensuremath{\Macro^{g'\rightarrow g}_{s\,#1}}}
+\newcommand{\psig}{\ensuremath{\psi^g}}
+\newcommand{\Di}{\ensuremath{\Delta_i}}
+\newcommand{\Dj}{\ensuremath{\Delta_j}}
+\newcommand{\Dk}{\ensuremath{\Delta_k}}
+%---------------------------------------------------------------------------
+%---------------------------------------------------------------------------
+\begin{document}
+\begin{center}
+{\bf NE 155/255, Fall 2019 \\
+Operator Form\\
+October 21, 2019}
+\end{center}
+
+\setlength{\unitlength}{1in}
+\begin{picture}(6,.1) 
+\put(0,0) {\line(1,0){6.25}}         
+\end{picture}
+
+We have now fully discretized the transport equation: 
+\begin{align}
+\vOmega_a \cdot \nabla \psi^g_a(\vecr) &+ \Sigma^g_t(\vecr)\psi^g_a(\vecr) =   \label{eq:mg-sn-transport}\\
+&\sum_{g'=0}^{G-1}
+  \sum_{\ell=0}^N
+  \sigg{\ell}(\vec{r})
+  \Bigl[
+  Y^e_{\ell0}(\vOmega_a)\evenp_{\ell0}(\vec{r}) +
+  \sum_{m=1}^\ell
+  \bigl(
+  Y^e_{\ell m}(\vOmega_a)\evenp_{\ell m}(\vec{r}) +
+  Y^o_{\ell m}(\vOmega_a)\oddp_{\ell m}(\vec{r})
+  \bigr)\Bigr] + Q_{a}^g(\vec{r})\:, \nonumber
+\end{align}
+\begin{alignat}{3}
+  \even_{\ell m} &= \int_{4\pi}Y^e_{\ell m}(\vOmega)\psi^g(\vOmega)\:d\vOmega\:,
+  \quad& m\ge 0\:,\label{eq:even-flux}\\
+  %%
+  \odd_{\ell m} &= \int_{4\pi}Y^o_{\ell m}(\vOmega)\psi^g(\vOmega)\:d\vOmega\:,
+  \quad& m>0\:.\label{eq:odd-flux}
+\end{alignat}
+%
+Now that we have these equations (+ spatial discretization) we're going to look at how we actually solve this with a computer. 
+
+The  next set of material comes from\\
+\hspace*{2em}R. N. Slaybaugh. \textit{Acceleration Methods for Massively Parallel Deterministic Transport}, a PhD Dissertation. University of Wisconsin, Madison, WI (2011).\\
+\hspace*{2em}T. M. Evans, A. S. Stafford, R. N. Slaybaugh, and K. T. Clarno. ``Denovo -- New
+Three-Dimensional Parallel Discrete Ordinates Code in SCALE." \textit{Nuclear Technology},
+\textbf{volume 171}(2), pp. 171–200 (2010).
+
+\section*{Operator Form}
+We start by expressing the TE in operator notation; which makes it easier to talk about solution techniques. In general, uppercase bolded letters will indicate matrices and lowercase italicized letters will indicate vectors and scalars. The following operators are used to express the transport equation:\\
+%
+\hspace*{2em} $\mathbf{L} = \vOmega \cdot \nabla + \Macro_t$ is the transport operator, \\
+\hspace*{2em} $\mathbf{M}$ is the operator that converts harmonic moments into discrete angles, \\
+\hspace*{2em} $\mathbf{S}$ is the scattering matrix, \\
+\hspace*{2em} $Q$ contains the external source,\\
+\hspace*{2em} $f$ contains the fission source, $\nu \Macro_{f}$; $\mathbf{F} =\mathbf{\chi} f^{T}$, \\ 
+\hspace*{2em} $\mathbf{D} = \ve{M^{T}}\ve{W} = \sum_{a=1}^{n}Y^{e/o}_{\ell m}w_{a}$ is the discrete-to-moment operator. 
+
+With this notation, \autoref{eq:mg-sn-transport} can be written as \autoref{eq:operator-form}; it can be formulated as an eigenvalue problem by replacing the fixed soruce term with the fission term, $\frac{1}{k}\mathbf{MF}\phi$. This has two unknowns, the angular flux and the moments, which are related by the discrete-to-moment operator as seen in Equation \eqref{eq:moments} [NOTE: $\phi$ are the flux moments, \textbf{not} the scalar flux].
+%
+\begin{align}
+  \mathbf{L} \psi &= \mathbf{MS}\phi + \ve{M}Q \label{eq:operator-form}\\
+  \Phi &= \mathbf{D}\psi 
+  \label{eq:moments}
+\end{align}
+%The typical strategy for solving Equation \eqref{eq:operator-form} is to combine it with \eqref{eq:moments} and form one equation involving only the moments, where $Q$ is comprised of the fixed or fission source: 
+%\begin{equation}
+%   (\ve{I} - \ve{DL}^{-1}\ve{MS})\phi = Q \:.
+%\end{equation}  
+%This is solved for $\phi$ from which $\psi$ can be determined at the end of the calculation.
+%
+The size of the operators can be defined in terms of the granularity of discretization: \\
+%
+\hspace*{2em} $G$ = number of energy groups, \\
+\hspace*{2em} $N$ = number of moments, \\
+\hspace*{2em} $n$ = number of angular unknowns, \\
+\hspace*{2em} $c$ = number of cells, \\
+\hspace*{2em} $u$ = number of unknowns per cell, which is determined by spatial discretization. \\
+%
+These can be combined to define \\
+\hspace*{2em} $\alpha = G \times n \times c \times u$ and \\
+\hspace*{2em} $\beta = G \times N \times c \times u$. \\
+Using $\alpha$ and $f$, Equation \eqref{eq:operator-form} can be presented in terms of operator size:\\
+\[
+(\alpha \times \alpha)(\alpha \times 1) = (\alpha \times \beta) (\beta \times \beta) (\beta \times 1) + (\alpha \times \beta) (\beta \times 1)\:.
+%(\alpha \times \betaf) (\beta \times \beta) (\beta \times 1)\:.
+\]
+The index variables, their meaning, and their ranges are shown in Table \ref{table:index}. 
+%
+\begin{table}[!h]
+\caption{Meaning and Range of Indices Used in Transport Discretization}
+\begin{center}
+\begin{tabular}{l c c c c}
+\hline
+Variable & Symbol & First & Last \\[0.5ex]
+\hline
+Energy & g & 0 & G-1 \\
+Solid Angle & a & 1 & n \\
+Space & suppressed & n/a & n/a \\
+Legendre moment ($P_{N}$) & $\ell$ & 0 & N \\
+Spherical harmonic moment ($Y$) & m & 0 & $\ell$ \\
+\hline
+\end{tabular}
+\end{center}
+\label{table:index}
+\end{table}
+%
+
+The structures of the vectors and matrices are shown in the next few equations as this can make the whole thing easier to understand and visualize. The angular flux vector is explicitly written first, where for each discrete angle, $a$, and energy group, $g$, the set of angular fluxes, $ \psi^g_a$, includes all spatial unknowns.
+%
+ \begin{align}
+    \psi &=     \begin{pmatrix}
+    [\psi]_{0} & [\psi]_1 & \cdots & [\psi]_g & \cdots [\psi]_{G-1} 
+  \end{pmatrix}^T  \:, \quad \text{and}  \\
+  %
+    [\psi]_g &= \begin{pmatrix}
+    \psi^g_1 & \psi^g_2& \cdots & \psi^g_a & \cdots \psi^g_n 
+  \end{pmatrix}^T \:.  
+\end{align}
+%
+\begin{equation}
+  \mathbf{M} =    \begin{pmatrix}
+      [\ve{M}]_{00} & 0 & 0 & \cdots & 0 \\
+      0 & [\ve{M}]_{11} & 0 & \cdots & 0 \\
+      0 & 0 & [\ve{M}]_{22} & \cdots & 0 \\
+      \vdots & \vdots & \vdots & \ddots   & \vdots \\
+      0 & 0 & 0 & \cdots & [\ve{M}]_{G-1,G-1} \\
+    \end{pmatrix} \nonumber  \:, \qquad  % 
+    \end{equation}
+    \begin{equation}
+  \mathbf{S}  =     \begin{pmatrix}
+      [\ve{S}]_{0\rightarrow0} & [\ve{S}]_{1\rightarrow0} & [\ve{S}]_{2\rightarrow0} & \cdots &
+      [\ve{S}]_{G-1\rightarrow0} \\
+      [\ve{S}]_{0\rightarrow1} & [\ve{S}]_{1\rightarrow1} & [\ve{S}]_{2\rightarrow1} & \cdots &
+      [\ve{S}]_{G-1\rightarrow1} \\
+      [\ve{S}]_{0\rightarrow2} & [\ve{S}]_{1\rightarrow2} & [\ve{S}]_{2\rightarrow2} & \cdots &
+      [\ve{S}]_{G-1\rightarrow2} \\
+      \vdots & \vdots & \vdots & \ddots & \vdots \\
+      [\ve{S}]_{0\rightarrow G-1} & [\ve{S}]_{1\rightarrow G-1} & [\ve{S}]_{2\rightarrow G-1} & \cdots &
+      [\ve{S}]_{G-1\rightarrow G-1}
+    \end{pmatrix} \nonumber  \:,
+ \end{equation}
+ %
+ \begin{alignat}{2}
+      \mathbf{F}  &=     \begin{pmatrix}
+     \chi^{0}[\nu\Macro_{f}]^{0} &\chi^{0}[\nu\Macro_{f}]^{1} & \cdots &
+      \chi^{0}[\nu\Macro_{f}]^{G-1} \\
+      \chi^{1}[\nu\Macro_{f}]^{0} &\chi^{1}[\nu\Macro_{f}]^{1} & \cdots &
+      \chi^{1}[\nu\Macro_{f}]^{G-1}\\
+      \vdots & \vdots & \ddots & \vdots \\
+      \chi^{G-1}[\nu\Macro_{f}]^{0} &\chi^{G-1}[\nu\Macro_{f}]^{1} & \cdots &
+      \chi^{G-1}[\nu\Macro_{f}]^{G-1}\\
+    \end{pmatrix} \:, \nonumber & \qquad
+    %
+  [\ve{S}]_{g'\rightarrow g} = \begin{pmatrix}
+    \sigg{0} & 0 & \cdots & 0  \\
+    0 & \sigg{1} & \cdots & 0 \\
+    \vdots & 0 & \ddots  & \vdots \\
+     0 & 0 & \cdots & \sigg{N}
+  \end{pmatrix}\:, \nonumber
+ \end{alignat}
+    %
+\begin{equation}    
+   [\ve{M}]_{gg} = \begin{pmatrix}
+    \Ye{00}{1} & \Ye{10}{1} & \Yo{11}{1} & \Ye{11}{1} & 
+    \Ye{20}{1} & \cdots & \Yo{NN}{1} & \Ye{NN}{1} \\
+    \Ye{00}{2} & \Ye{10}{2} & \Yo{11}{2} & \Ye{11}{2} & 
+    \Ye{20}{2} & \cdots & \Yo{NN}{2} & \Ye{NN}{2} \\
+    \Ye{00}{3} & \Ye{10}{3} & \Yo{11}{3} & \Ye{11}{3} & 
+    \Ye{20}{3} & \cdots & \Yo{NN}{3} & \Ye{NN}{3} \\
+    \vdots     & \vdots     & \vdots     & \vdots     & 
+    \vdots     &  \ddots    & \vdots     & \vdots     \\
+    \Ye{00}{n} & \Ye{10}{n} & \Yo{11}{n} & \Ye{11}{n} & 
+    \Ye{20}{n} & \cdots & \Yo{NN}{n} & \Ye{NN}{n}
+  \end{pmatrix}\:. \nonumber \\
+\end{equation}
+
+\noindent Note that $[\ve{M}]_{00} = [\ve{M}]_{11} =  \hdots = [\ve{M}]_{G-1,G-1} = [\ve{M}]$. These are written with subscripts to simplify the visualization of which blocks correspond to which equations and multiply which other blocks.
+
+The lower
+triangular part of $\ve{S}$ represents downscattering, the diagonal represents
+in-group scattering, and the upper diagonal is upscattering. 
+
+Finally, the vector of flux moments for group $g$ is written as
+%
+\begin{equation} 
+[\phi]_g = \begin{pmatrix} \even_{00} & \even_{10} & \odd_{11}
+& \even_{11} & \even_{20} & \cdots & \odd_{NN} & \even_{NN}
+  \end{pmatrix}^T\:,
+\end{equation} for each group.
+
+Note also that the total size of $\ve{D}$ over all
+groups and spatial unknowns is $(\beta \times \alpha)$ (where $\ve{W}$ is an $(n\times n)$ diagonal matrix of diagonal matrices of quadrature
+weights).  Also, even though $\ve{M}$ maps
+angular flux moments onto discrete angular fluxes, in general
+$\psi\ne\ve{M}\phi$.  This constraint can be removed by using a Galerkin
+quadrature in which $\ve{D} = \ve{M}^{-1}$.
+
+\end{document}
