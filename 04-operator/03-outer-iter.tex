@@ -1,0 +1,114 @@
+\documentclass[12pt]{article}
+\usepackage[top=1in, bottom=1in, left=1in, right=1in]{geometry}
+
+\usepackage{setspace}
+\onehalfspacing
+
+\usepackage{amssymb}
+%% The amsthm package provides extended theorem environments
+\usepackage{amsthm}
+\usepackage{epsfig}
+\usepackage{times}
+\renewcommand{\ttdefault}{cmtt}
+\usepackage{amsmath}
+\usepackage{graphicx} % for graphics files
+\usepackage{tabu}
+
+% Draw figures yourself
+\usepackage{tikz} 
+
+% writing elements
+%\usepackage{mhchem}
+
+\usepackage{paralist}
+
+% The float package HAS to load before hyperref
+\usepackage{float} % for psuedocode formatting
+\usepackage{xspace}
+
+% from Denovo Methods Manual
+\usepackage{mathrsfs}
+\usepackage[mathcal]{euscript}
+\usepackage{color}
+\usepackage{array}
+
+\usepackage[pdftex]{hyperref}
+\usepackage[parfill]{parskip}
+
+% math syntax
+\newcommand{\nth}{n\ensuremath{^{\text{th}}} }
+\newcommand{\ve}[1]{\ensuremath{\mathbf{#1}}}
+\newcommand{\Macro}{\ensuremath{\Sigma}}
+\newcommand{\rvec}{\ensuremath{\vec{r}}}
+\newcommand{\vecr}{\ensuremath{\vec{r}}}
+\newcommand{\omvec}{\ensuremath{\hat{\Omega}}}
+\newcommand{\vOmega}{\ensuremath{\hat{\Omega}}}
+\newcommand{\even}{\ensuremath{\phi^g}}
+\newcommand{\odd}{\ensuremath{\vartheta^g}}
+\newcommand{\evenp}{\ensuremath{\phi^{g'}}}
+\newcommand{\oddp}{\ensuremath{\vartheta^{g'}}}
+\newcommand{\Sn}{\ensuremath{S_N} }
+\newcommand{\Ye}[2]{\ensuremath{Y^e_{#1}(\vOmega_#2)}}
+\newcommand{\Yo}[2]{\ensuremath{Y^o_{#1}(\vOmega_#2)}}
+\newcommand{\sigg}[1]{\ensuremath{\Macro^{g'\rightarrow g}_{s\,#1}}}
+\newcommand{\psig}{\ensuremath{\psi^g}}
+\newcommand{\Di}{\ensuremath{\Delta_i}}
+\newcommand{\Dj}{\ensuremath{\Delta_j}}
+\newcommand{\Dk}{\ensuremath{\Delta_k}}
+%---------------------------------------------------------------------------
+%---------------------------------------------------------------------------
+\begin{document}
+\begin{center}
+{\bf NE 155/255, Fall 2019 \\
+Outer Iteration Methods\\
+October 25, 2019}
+\end{center}
+
+\setlength{\unitlength}{1in}
+\begin{picture}(6,.1) 
+\put(0,0) {\line(1,0){6.25}}         
+\end{picture}
+
+\subsection*{Outer Iterations}
+Once we have solved the space-angle component inside of a group, we need to loop over groups. There are several strategies for this, with Jacobi and Gauss Seidel being the most common (and multigroup Krylov becoming more common).
+
+\subsubsection*{Jacobi}
+The Jacobi method is known as the method of \textit{simultaneous displacements}. % \cite{LeVeque2007}. 
+This could be applied as the outer iteration method over energy and can be written as follows, where $j$ is the outer iteration index:
+%
+\begin{equation}
+  \ve{L} [\psi]_{g}^{j+1} = [\ve{M}] [\ve{S}]_{g\rightarrow g}[\phi]_{g}^{j} + 
+  [\ve{M}]\bigl(\sum_{g'=0}^{g-1} [\ve{S}]_{g'\rightarrow g}[\phi]_{g'}^{j} +
+  \sum_{g'=g+1}^{G-1} [\ve{S}]_{g'\rightarrow g}[\phi]_{g'}^{j} + [q_{e}]_{g} \bigr) \label{eq:Jacobi} \:. 
+\end{equation}
+%
+The Jacobi method is order \textit{independent} since all terms on the right are at the old iteration level. Jacobi is unconditionally stable and linearly convergent, but may converge very slowly. The convergence of Jacobi is governed by its spectral radius.% \cite{LeVeque2007}. 
+
+------------------------------------------------\\
+\textbf{Aside:}\\
+The spectrum of eigenvalues of a matrix $\ve{A}$ are defined formally as
+\[\sigma(\ve{A}) = [ \lambda \in \mathbb{C} : \det(\ve{A} - \lambda \ve{I})=0] \] 
+and an eigenvalue is 
+\[ \lambda \in \sigma(\ve{A})\:.\]
+
+The spectral radius of $\ve{A} \in \mathbb{C}^{n \times n}$ is defined as 
+\[\rho(\ve{A}) \equiv \max \lbrace |\lambda|, \lambda \in \sigma(\ve{A}) \rbrace\]
+
+
+\subsubsection*{Gauss Seidel}
+Gauss Seidel (GS) is known as the method of \textit{successive displacements}. % \cite{LeVeque2007}. 
+It is commonly used as the outer iteration method over energy and can be written as follows:
+%
+\begin{equation}
+  \ve{L} [\psi]_{g}^{j+1} = [\ve{M}] [\ve{S}]_{g\rightarrow g}[\phi]_{g}^{j+1} +   [\ve{M}]\bigl(\sum_{g'=0}^{g-1} [\ve{S}]_{g'\rightarrow g}[\phi]_{g'}^{j+1} + \sum_{g'=g+1}^{G-1} [\ve{S}]_{g'\rightarrow }[\phi]_{g'}^{j} + [q_{e}]_{g} \bigr) \label{eq:GaussSeidel} \:. 
+\end{equation}
+%
+The GS method is order \textit{dependent}, containing terms on the right hand side at both the new and old iterates. Once the space-angle iterations for each upscattering group are completed for one outer iteration, the right hand side is recalculated and the within-group calculations are repeated. This goes on until the entire system converges.% \cite{Evans2009d}. 
+
+Gauss Seidel is also unconditionally stable and linearly convergent, but may converge very slowly. The convergence of GS is also governed by its spectral radius, $\rho$, though it converges twice as fast as the Jacobi method.% \cite{LeVeque2007}. 
+
+The spectral radius of Gauss Seidel has been found for various materials by solving the eigenvalue problem $(\ve{T} - \ve{S}_{D})^{-1}\ve{S}_{U} \xi = \rho \xi$, where $\ve{T}$ is the matrix of total cross sections, $\ve{S}_{U}$ is the upper triangular portion of $\ve{S}$, $\ve{S}_{D}$ contains the diagonal and lower triangular portion, and $\xi$ is the eigenvector. This eigenvalue problem comes from Fourier analysis. The spectral radii for some materials of practical interest determined using cross sections with 41 thermal upscattering groups are: graphite = 0.9984, heavy water = 0.9998, and iron = 0.6120. % \cite{Adams2002}, \cite{Evans2009d}. 
+Problems containing graphite or heavy water would converge very slowly if GS were used.   
+
+
+\end{document}
