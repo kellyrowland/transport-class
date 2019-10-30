@@ -1,0 +1,239 @@
+\documentclass[12pt]{article}
+\usepackage[top=1in, bottom=1in, left=1in, right=1in]{geometry}
+
+\usepackage{setspace}
+\onehalfspacing
+
+\usepackage{amssymb}
+%% The amsthm package provides extended theorem environments
+\usepackage{amsthm}
+\usepackage{epsfig}
+\usepackage{times}
+\renewcommand{\ttdefault}{cmtt}
+\usepackage{amsmath}
+\usepackage{graphicx} % for graphics files
+\usepackage{tabu}
+
+% Draw figures yourself
+\usepackage{tikz} 
+
+% writing elements
+%\usepackage{mhchem}
+
+\usepackage{paralist}
+
+% The float package HAS to load before hyperref
+\usepackage{float} % for psuedocode formatting
+\usepackage{xspace}
+
+% from Denovo Methods Manual
+\usepackage{mathrsfs}
+\usepackage[mathcal]{euscript}
+\usepackage{color}
+\usepackage{array}
+
+\usepackage[pdftex]{hyperref}
+\usepackage[parfill]{parskip}
+
+% math syntax
+\newcommand{\nth}{n\ensuremath{^{\text{th}}} }
+\newcommand{\ve}[1]{\ensuremath{\mathbf{#1}}}
+\newcommand{\Macro}{\ensuremath{\Sigma}}
+\newcommand{\rvec}{\ensuremath{\vec{r}}}
+\newcommand{\vecr}{\ensuremath{\vec{r}}}
+\newcommand{\omvec}{\ensuremath{\hat{\Omega}}}
+\newcommand{\vOmega}{\ensuremath{\hat{\Omega}}}
+\newcommand{\even}{\ensuremath{\phi^g}}
+\newcommand{\odd}{\ensuremath{\vartheta^g}}
+\newcommand{\evenp}{\ensuremath{\phi^{g'}}}
+\newcommand{\oddp}{\ensuremath{\vartheta^{g'}}}
+\newcommand{\Sn}{\ensuremath{S_N} }
+\newcommand{\Ye}[2]{\ensuremath{Y^e_{#1}(\vOmega_#2)}}
+\newcommand{\Yo}[2]{\ensuremath{Y^o_{#1}(\vOmega_#2)}}
+\newcommand{\sigg}[1]{\ensuremath{\Macro^{gg'}_{s\,#1}}}
+\newcommand{\psig}{\ensuremath{\psi^g}}
+\newcommand{\Di}{\ensuremath{\Delta_i}}
+\newcommand{\Dj}{\ensuremath{\Delta_j}}
+\newcommand{\Dk}{\ensuremath{\Delta_k}}
+%---------------------------------------------------------------------------
+%---------------------------------------------------------------------------
+\begin{document}
+\begin{center}
+{\bf NE 155/255, Fall 2019 \\
+Eigenvalue Formulation and Solutions\\
+October 30, 2019}
+\end{center}
+
+\setlength{\unitlength}{1in}
+\begin{picture}(6,.1) 
+\put(0,0) {\line(1,0){6.25}}         
+\end{picture}
+
+We're going to start talking about how to find the criticality state of a reactor, or the dominant eigenvalue-eigenvector pair. To turn the steady state Boltzmann transport equation with fission into an eigenvalue problem, we can use a mathematical ``knob". There are two ways we do this:
+\begin{enumerate}
+\item Alter the effective cross section by adding an $\alpha$ term or
+\item Alter the effective fission yield, $\nu$, by scaling it with $k$.
+\end{enumerate}
+
+\textbf{The $\alpha$ version}, which is used more frequently at LLNL and LANL, looks like this:
+%
+\begin{align*}
+\bigl[\vOmega \cdot \nabla + \bigl(\Sigma_t(\vec{r}) + \underbrace{\frac{\alpha_0}{v}}_{\text{new}}\bigr)\bigr]
+\psi(\vec{r}, E, \vOmega) &= \int_{4 \pi} d\vOmega'
+\int_0^{\infty} dE' \: \Sigma_s(\vec{r}, E', \vOmega' \rightarrow E, \vOmega) \psi(\vec{r}, E', \vOmega')\\
+ +& \frac{\chi(E)}{4 \pi}\int_0^{\infty} dE' \: \nu(E') \Sigma_f(\vec{r},E') \int_{4 \pi} d\vOmega' \:\psi(\vec{r}, E', \vOmega')
+\end{align*}
++ homogeneous boundary conditions.\\
+Important notes about this version:
+%
+\begin{itemize}
+\item In the $\alpha$-evaluation problem, the total cross section is modified by a 1/v absorber.
+\item There is numerical difficulty if $\alpha_0 < 0$.\\
+If $\frac{-\alpha_0}{v} > \Sigma_t$ then total interaction becomes a ``source" rather than a loss!
+\item If $\alpha_0 > 0$, absorption of \textbf{slow} neutrons is enhanced by an $\alpha_0$/v absorber $\rightarrow$ harder spectrum.
+\item If $\alpha_0 < 0$, absorption of \textbf{fast} neutrons is enhanced by an $\alpha_0$/v absorber $\rightarrow$ softer spectrum.
+\item These spectral effects are important because reaction rate is $\int_0^{\infty} dE \:\Sigma_j(E) \phi(E)$
+\end{itemize}
+\pagebreak
+\textbf{The $k$-eigenvalue problem} is a little bit different:
+%
+\begin{align*}
+\bigl[\vOmega \cdot \nabla + \Sigma_t(\vec{r}) \bigr]\psi(\vec{r}, E, \vOmega) &= 
+\int_{4 \pi} d\vOmega' \int_0^{\infty} dE' \: \Sigma_s(\vec{r}, E', \vOmega' \rightarrow E, \vOmega)
+\psi(\vec{r}, E', \vOmega')\\
+ +& \underbrace{\frac{1}{k}}_{\text{new}}\frac{\chi(E)}{4 \pi}\int_0^{\infty} dE' \: \nu(E') \Sigma_f(\vec{r},E')
+ \int_{4 \pi} d\vOmega' \:\psi(\vec{r}, E', \vOmega')
+\end{align*}
+%
++ homogeneous boundary conditions.\\
+Important notes about this version:
+\begin{itemize}
+\item we can see that $k=1$ means $\alpha_0 = 0$ and vice versa.
+\item $k$ as a multiplication factor: the ratio of neutron production in one generation to the neutron production in the previous generation.
+\item We often use the $k$ version because we don't have the mathematical difficulties associated with the $\alpha$ form, and the physical interpretation is helpful.
+\end{itemize}
+
+Most material derived from Rachel's thesis, with support from Wolfram Mathworld and other sources (noted in TeX comments).
+
+\subsection*{Background}
+A right eigenvector is defined as a column vector $x_R$ satisfying
+\[\ve{A}x_R=\lambda_R x_R\:.\] 
+In many common applications, only right eigenvectors (and not left eigenvectors) need be considered. Hence the unqualified term ``eigenvector" can be understood to refer to a right eigenvector. %http://mathworld.wolfram.com/RightEigenvector.html
+
+A left eigenvector is defined as a row vector $x_L$ satisfying
+\[ x_L\ve{A}=\lambda_L x_L\:.\] %http://mathworld.wolfram.com/LeftEigenvector.html
+
+The \textbf{generalized eigenvalue problem} takes the form $\ve{B}x = \mu \ve{C}x$ and can be transformed into an \textbf{ordinary eigenvalue problem}, $\ve{A}x = \lambda x$. Both forms have the same right eigenvectors. If $\ve{C}$ is non-singular then $\ve{A} = \ve{C}^{-1}\ve{B}$ and the problem $v = \ve{A}x$ can be solved in two steps: %\cite{Stewart2001}
+%
+\begin{enumerate}
+  \item $w = \ve{B}x$
+  \item Solve the system $\ve{C}v = w$.
+\end{enumerate}
+%
+Because the generalized form can be converted to the ordinary form, we will focus on the more common ordinary form without loss of applicability.
+
+Recall this basic notation: let $\sigma(\ve{A}) \equiv \{\lambda \in \mathbb{C} : rank(\ve{A} - \lambda \ve{I}) \le n\}$ be the spectrum of $\ve{A}$, where the elements in the set are the eigenvalues and $\mathbb{C}$ is the set of complex numbers. The eigenvalues can be characterized as the $n$ roots of the polynomial $p_{\ve{A}}(\lambda) \equiv det(\lambda \ve{I} - \ve{A})$. Each distinct eigenvalue in $\sigma(\ve{A})$ has a corresponding nonzero vector $x$ such that $\ve{A}x_{i} = \lambda_{i} x_{i}$ for $i = 1,...,n$. % \cite{Sorensen1996}. 
+It will be assumed that the eigenvalues are ordered as $|\lambda_{1}| > |\lambda_{2}| \ge \dots \ge |\lambda_{n}| \ge 0$. 
+
+Eigenvalue problems in the nuclear transport community are typically solved with iterative rather than direct methods. A variety of iterative solvers have been used to solve eigenvalue problems. These are ones that have been most widely used. 
+
+\subsubsection*{Numerical Example}
+
+\begin{gather*}
+A\mathbf{x} = \lambda\mathbf{x} \\
+\det(A - \lambda\textbf{x}) = 0
+\end{gather*}
+
+\begin{equation*}
+A = 
+  \begin{bmatrix}
+  0 & 1 \\
+  -2 & -3 
+  \end{bmatrix}
+\end{equation*}
+
+Find the eigenvalues and eigenvectors.
+
+\begin{gather*}
+\det(A - \lambda\textbf{I}) = 
+\det\left( \begin{bmatrix} 0 & 1 \\ -2 & -3 \end{bmatrix} - \begin{bmatrix} \lambda & 0 \\ 0 & \lambda \end{bmatrix} \right)
+= 0 \\
+\det\left( \begin{bmatrix} -\lambda & 1 \\ -2 & -3-\lambda \end{bmatrix}\right) =
+-\lambda(-3-\lambda) - [(1)(-2)] = 0 \\
+\lambda^2 +3\lambda + 2 = 0 \quad\rightarrow\quad \boxed{\lambda_1 = -2, \lambda_2 = -1}
+\end{gather*}
+
+\begin{minipage}[t]{0.5\textwidth}
+\begin{gather*}
+A\mathbf{x_1} = \lambda_1\mathbf{x_1} \\
+(A - \lambda_1\mathbf{x_1}) = 0 \\
+\begin{bmatrix} -\lambda_1 & 1 \\ -2 & -3-\lambda_1 \end{bmatrix}\mathbf{x_1} = 0 \\
+\begin{bmatrix} 2 & 1 \\ -2 & -1 \end{bmatrix}\begin{bmatrix} x_{1,1} \\ x_{1,2}\end{bmatrix} = 0 \\
+2x_{1,1} + x_{1,2} = 0 \\
+-2x_{1,1} - x_{1,2} = 0 \\
+\mathbf{x_1} = c_1\begin{bmatrix} 1 \\ -2 \end{bmatrix}
+\end{gather*}
+\end{minipage}
+\vline
+\begin{minipage}[t]{0.5\textwidth}
+\begin{gather*}
+A\mathbf{x_2} = \lambda_2\mathbf{x_2} \\
+(A - \lambda_2\mathbf{x_2}) = 0 \\
+\begin{bmatrix} -\lambda_2 & 1 \\ -2 & -3-\lambda_2 \end{bmatrix}\mathbf{x_2} = 0 \\
+\begin{bmatrix} 1 & 1 \\ -2 & -2 \end{bmatrix}\begin{bmatrix} x_{2,1} \\ x_{2,2}\end{bmatrix} = 0 \\
+x_{2,1} + x_{2,2} = 0 \\
+-2x_{2,1} - 2x_{2,2} = 0 \\
+\mathbf{x_2} = c_2\begin{bmatrix} 1 \\ -1 \end{bmatrix}
+\end{gather*}
+\end{minipage}
+
+Here, $c_1$ and $c_2$ are arbitrary constants. Note that which entry of each
+eigenvector has which sign is also arbitrary; only the ratio is important.
+
+%-----------------------------------------------------------------------------------------
+\subsection*{Power Iteration}
+Power iteration (PI) is an old and straightforward algorithm for finding an eigenvalue/vector pair. The basic idea is that any nonzero vector can be written as a linear combination of the eigenvectors of $\ve{A}$ because the eigenvectors are linearly independent, namely $v_0 = \gamma_1 x_1 + \gamma_2 x_2 + \cdots + \gamma_n x_n$ where $x_{j}$ is the $j$th eigenvector and $\gamma_{j}$ is some constant. This specific expression assumes a non-defective $\ve{A}$, though this assumption is not necessary for the method to work. 
+
+Another fact that is used to understand power iteration is that $\ve{A}^k x_i = \lambda_i^k x_i$. Thus
+%
+\begin{equation}
+  \ve{A}^k v_{0} = \gamma_1 \lambda_1^k x_1 + \gamma_2 \lambda_2^k x_2 + \cdots + \gamma_n \lambda_n^k x_n \:.
+  \label{eq:Ak}
+\end{equation}
+%
+Since $|\lambda_1| > |\lambda_i|, i \ne 1$, the first term in the expansion will dominate as $k \to \infty$ and $\ve{A}^k v_{0}$ therefore becomes an increasingly accurate approximation to $x_1$. In practice, it is desirable to avoid exponentiating a matrix and it is helpful to normalize $v$ in order to avoid possible over or underflow. This leads to the power iteration algorithm:%\ref{algo:PI} \cite{Stewart2001}, \cite{Trefethen1997}.
+\pagebreak
+%
+\begin{list}{}{}
+  \item Given $\ve{A}$ and $v_0$, $v = \frac{v_{0}}{||v_{0}||}$.
+  \item Until convergence do:
+  \begin{list}{}{\hspace{2em}}
+    \item $w = \ve{A}v$
+    \item $v = \frac{w}{||w||}$
+    \item $\lambda = v^{T}\ve{A}v$
+  \end{list}
+  %\caption{Power Iteration}
+  %\label{algo:PI}
+\end{list}
+
+Using Equation \eqref{eq:Ak} and the PI algorithm, PI's convergence behavior can be understood. After $k$ steps, the iteration vector will be: 
+%
+\begin{equation}
+  v_{k} = \bigl( \frac{\lambda_{1}^{k}}{e_{1}^{T}\ve{A}^{k}v_{0}} \bigr) \bigl(\frac{1}{\lambda_{1}^{k}}\ve{A}^{k}v_{0} \bigr) \:.
+\end{equation}
+% 
+If $\ve{A}$ has eigenpairs $\{(x_{j}, \lambda_{j}), 1 \le j \le n \}$ and $v_{0}$ has the expansion $v_{0} = \sum_{j=1}^{n} x_{j}\gamma_{j}$ then
+%
+\begin{equation}
+  \frac{1}{\lambda_{1}^{k}}\ve{A}^{k}v_{0} =  \frac{1}{\lambda_{1}^{k}} \sum_{j=1}^{n} \ve{A}^{k}x_{j}\gamma_{j} = \sum_{j=1}^{n} x_{j} \bigl(\frac{\lambda_{j}}{\lambda_{1}} \bigr) \gamma_{j} \:.
+  \label{eq:PIexpand}
+\end{equation}
+%
+From equation \eqref{eq:PIexpand} it can be determined that the error is reduced in each iteration by a factor of $|\frac{\lambda_{2}}{\lambda_{1}}|$, which is called the dominance ratio. If $\lambda_2$ is close to $\lambda_1$, then this ratio will be close to unity and the method will converge very slowly. If $\lambda_2$ is far from $\lambda_1$, then convergence will happen much more quickly. Put simply, PI is better suited for problems where $\ve{A}$ has eigenvalues that are well separated.% \cite{Sorensen1996}.  
+
+Power iteration is very attractive because it only requires matrix-vector products and two vectors of storage space. Because of its simplicity and low storage cost, PI has been widely used in the transport community for criticality problems for quite some time. %\cite{Lewis1993}, \cite{Warsa2004a}. 
+However, because of the slow convergence for many problems of interest, many current codes use an acceleration method with PI or have moved away from it altogether. 
+
+As an aside, it is interesting to point out the connection between Krylov methods and power iteration. The power method is a Krylov method that uses a subspace of dimension one.  A Krylov subspace is built by storing the vectors created during each iteration of the power method. Krylov methods with subspaces larger than one take advantage of the information generated during each iteration that the power method discards. 
+
+\end{document}
